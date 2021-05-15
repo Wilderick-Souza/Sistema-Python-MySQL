@@ -1,5 +1,6 @@
 from PyQt5 import uic, QtWidgets
 import mysql.connector
+from reportlab.pdfgen import canvas
 
 #Cria o banco de dados para ser usado na aplicação.
 banco_de_dados = mysql.connector.connect(
@@ -62,11 +63,48 @@ def chama_listagem():
             listagem.tableWidget.setItem(linha,coluna,QtWidgets.QTableWidgetItem(str(dados_lidos[linha][coluna])))
 
 
+def gerar_pdf():
+    cursor = banco_de_dados.cursor() #Cria o cursor
+    comando_SQL = "SELECT * FROM produtos"
+    cursor.execute(comando_SQL)
+    dados_lidos = cursor.fetchall()
+    y=0
+
+    pdf = canvas.Canvas('listagem_produtos.pdf')
+    pdf.setFont('Times-Bold', 25)
+    pdf.drawString(200,800, 'Produtos cadastrados: ')
+    pdf.setFont('Times-Bold', 18)
+
+    pdf.drawString(10,750, 'ID')
+    pdf.drawString(110,750, 'CÓDIGO')
+    pdf.drawString(210,750, 'DESCRIÇÃO')
+    pdf.drawString(310,750, 'PREÇO')
+    pdf.drawString(410,750, 'CATEGORIA')
+
+ 
+    for i in range(0, len(dados_lidos)):
+        y += 50
+        pdf.drawString(10,750 - y, str(dados_lidos[i][0]))
+        pdf.drawString(110,750 - y, str(dados_lidos[i][1]))
+        pdf.drawString(210,750 - y, str(dados_lidos[i][2]))
+        pdf.drawString(310,750 - y, str(dados_lidos[i][3]))
+        pdf.drawString(410,750 - y, str(dados_lidos[i][4]))
+
+    pdf.save()
+    print('PDF foi gerado com sucesso!')
+
+
+
+
+
+#Controllers
 app=QtWidgets.QApplication([])#Cria a aplicação
 formulario=uic.loadUi("formulario01.ui")#Cria o formulário
 listagem=uic.loadUi("listagem.ui")
 formulario.pushButton.clicked.connect(funcao_principal)
 formulario.pushButton_2.clicked.connect(chama_listagem)
+listagem.pushButton.clicked.connect(gerar_pdf)
+
 
 
 formulario.show()
