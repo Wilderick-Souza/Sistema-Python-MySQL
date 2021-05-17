@@ -94,6 +94,17 @@ def gerar_pdf():
     print('PDF foi gerado com sucesso!')
 
 
+def excluir_dados():
+    linha = listagem.tableWidget.currentRow()
+    listagem.tableWidget.removeRow(linha)
+
+    cursor = banco_de_dados.cursor() #Cria o cursor
+    cursor.execute('SELECT id FROM produtos')
+    id = cursor.fetchall()
+    valor_id = id[linha][0]
+    cursor.execute(f'DELETE FROM produtos WHERE id = {str(valor_id)}')
+    print(valor_id)
+
 
 
 
@@ -104,6 +115,7 @@ listagem=uic.loadUi("listagem.ui")
 formulario.pushButton.clicked.connect(funcao_principal)
 formulario.pushButton_2.clicked.connect(chama_listagem)
 listagem.pushButton.clicked.connect(gerar_pdf)
+listagem.pushButton_2.clicked.connect(excluir_dados)
 
 
 
