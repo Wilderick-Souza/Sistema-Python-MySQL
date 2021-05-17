@@ -103,7 +103,7 @@ def excluir_dados():
     id = cursor.fetchall()
     valor_id = id[linha][0]
     cursor.execute(f'DELETE FROM produtos WHERE id = {str(valor_id)}')
-    print(valor_id)
+    banco_de_dados.commit()
 
 
 
