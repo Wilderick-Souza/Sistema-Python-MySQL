@@ -2,6 +2,8 @@ from PyQt5 import uic, QtWidgets
 import mysql.connector
 from reportlab.pdfgen import canvas
 
+global_id = 0
+
 #Cria o banco de dados para ser usado na aplicação.
 banco_de_dados = mysql.connector.connect(
     host="localhost",
@@ -47,6 +49,7 @@ def funcao_principal():
 
 
 def chama_listagem():
+    formulario.close()
     listagem.show()
 
     cursor = banco_de_dados.cursor() #Cria o cursor
@@ -106,16 +109,62 @@ def excluir_dados():
     banco_de_dados.commit()
 
 
+def editar_dados():
+    global global_id
+
+    linha = listagem.tableWidget.currentRow()
+
+    cursor = banco_de_dados.cursor() #Cria o cursor
+    cursor.execute('SELECT id FROM produtos')
+    id = cursor.fetchall()
+    valor_id = id[linha][0]
+    cursor.execute('SELECT * FROM produtos WHERE id =' + str(valor_id))
+    produto = cursor.fetchall()
+    tela_editar.show()
+
+    global_id = valor_id
+
+    tela_editar.lineEdit.setText(str(produto[0][0]))
+    tela_editar.lineEdit_2.setText(str(produto[0][1]))
+    tela_editar.lineEdit_3.setText(str(produto[0][2]))
+    tela_editar.lineEdit_4.setText(str(produto[0][3]))
+    tela_editar.lineEdit_5.setText(str(produto[0][4]))
 
 
-#Controllers
+def salvar_dados_editados():
+    #captura o número do ID global
+    global global_id
+    #Valor presente nos campos da tela_editar
+    codigo = tela_editar.lineEdit_2.text()
+    descricao = tela_editar.lineEdit_3.text()
+    preco = tela_editar.lineEdit_4.text()
+    categoria = tela_editar.lineEdit_5.text()
+    #Atualizar os dados do banco de dados
+    cursor = banco_de_dados.cursor()
+    cursor.execute("UPDATE produtos SET codigo = '{}', preco = '{}', categoria = '{}', descricao = '{}' WHERE id = '{}'".format(codigo,preco,categoria,descricao,global_id))
+    banco_de_dados.commit()
+    print('='*20)
+    print('Produto alterado com sucesso!')
+    print('='*20)
+    #Atualizar as janelas
+    tela_editar.close()
+    listagem.close()
+    chama_listagem()
+    
+
+    
+
 app=QtWidgets.QApplication([])#Cria a aplicação
 formulario=uic.loadUi("formulario01.ui")#Cria o formulário
 listagem=uic.loadUi("listagem.ui")
+tela_editar = uic.loadUi('tela_salvar.ui')
 formulario.pushButton.clicked.connect(funcao_principal)
 formulario.pushButton_2.clicked.connect(chama_listagem)
 listagem.pushButton.clicked.connect(gerar_pdf)
 listagem.pushButton_2.clicked.connect(excluir_dados)
+listagem.pushButton_3.clicked.connect(editar_dados)
+tela_editar.pushButton.clicked.connect(salvar_dados_editados)
+
 
 
 
